@@ -10,7 +10,9 @@ defmodule Ueberauth.Strategy.Github.OAuth do
   """
   use OAuth2.Strategy
 
-  @defaults [
+  alias OAuth2.{Client, Strategy}
+
+  @ldefaults [
     strategy: __MODULE__,
     site: "https://api.github.com",
     authorize_url: "https://github.com/login/oauth/authorize",
@@ -28,7 +30,7 @@ defmodule Ueberauth.Strategy.Github.OAuth do
   These options are only useful for usage outside the normal callback phase of Ueberauth.
   """
   def client(opts \\ []) do
-    OAuth2.Client.new(opts ++ @defaults)
+    Client.new(opts ++ @defaults)
   end
 
   @doc """
@@ -37,14 +39,14 @@ defmodule Ueberauth.Strategy.Github.OAuth do
   def authorize_url!(params \\ [], opts \\ []) do
     opts
     |> client
-    |> OAuth2.Client.authorize_url!(params)
+    |> Client.authorize_url!(params)
   end
 
   def get(token, url, headers \\ [], opts \\ []) do
     ([token: token] ++ opts)
-    |> client
+    |> client()
     |> put_param("client_secret", client().client_secret)
-    |> OAuth2.Client.get(url, headers, opts)
+    |> Client.get(url, headers, opts)
   end
 
   def get_token!(params \\ [], options \\ []) do
@@ -53,20 +55,22 @@ defmodule Ueberauth.Strategy.Github.OAuth do
     headers = Keyword.get(options, :headers, [])
     options = Keyword.get(options, :options, [])
 
-    client = OAuth2.Client.get_token!(client(client_options), params, headers, options)
-    client.token
+    client_options
+    |> client()
+    |> Client.get_token!(params, headers, options)
+    |> Map.get(:token)
   end
 
   # Strategy Callbacks
 
   def authorize_url(client, params) do
-    OAuth2.Strategy.AuthCode.authorize_url(client, params)
+    Strategy.AuthCode.authorize_url(client, params)
   end
 
   def get_token(client, params, headers) do
     client
     |> put_param("client_secret", client.client_secret)
     |> put_header("Accept", "application/json")
-    |> OAuth2.Strategy.AuthCode.get_token(params, headers)
+    |> Strategy.AuthCode.get_token(params, headers)
   end
 end

@@ -22,8 +22,21 @@ defmodule Ueberauth.Strategy.Helpers do
 
       error("something_bad", "Something really bad happened")
   """
-  @spec error(String.t(), String.t()) :: Error.t()
-  def error(key, message), do: struct(Error, message_key: key, message: message)
+  @spec error(String.t() | atom(), String.t() | atom()) :: Error.t()
+  def error(key, message) when is_atom(key) do
+    key
+    |> to_string()
+    |> error(message)
+  end
+
+  def error(key, message) when is_atom(message) do
+    string_message = to_string(message)
+    error(key, string_message)
+  end
+
+  def error(key, message) do
+    struct(Error, message_key: key, message: message)
+  end
 
   @doc """
   Creates a failure containing a list of error

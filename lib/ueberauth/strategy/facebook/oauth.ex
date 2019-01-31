@@ -10,6 +10,8 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   """
   use OAuth2.Strategy
 
+  alias OAuth2.{Client, Strategy}
+
   @defaults [
     strategy: __MODULE__,
     site: "https://graph.facebook.com",
@@ -26,7 +28,7 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   of Ueberauth.
   """
   def client(opts \\ []) do
-    OAuth2.Client.new(opts ++ @defaults)
+    Client.new(opts ++ @defaults)
   end
 
   @doc """
@@ -36,25 +38,25 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   def authorize_url!(params \\ [], opts \\ []) do
     opts
     |> client()
-    |> OAuth2.Client.authorize_url!(params)
+    |> Client.authorize_url!(params)
   end
 
   def get_token!(params \\ [], opts \\ []) do
     opts
     |> client
-    |> OAuth2.Client.get_token!(params)
+    |> Client.get_token!(params)
   end
 
   # Strategy Callbacks
 
   def authorize_url(client, params) do
-    OAuth2.Strategy.AuthCode.authorize_url(client, params)
+    Strategy.AuthCode.authorize_url(client, params)
   end
 
   def get_token(client, params, headers) do
     client
     |> put_param(:client_secret, client.client_secret)
     |> put_header("Accept", "application/json")
-    |> OAuth2.Strategy.AuthCode.get_token(params, headers)
+    |> Strategy.AuthCode.get_token(params, headers)
   end
 end

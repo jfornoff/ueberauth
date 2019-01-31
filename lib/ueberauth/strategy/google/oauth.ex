@@ -12,6 +12,8 @@ defmodule Ueberauth.Strategy.Google.OAuth do
   """
   use OAuth2.Strategy
 
+  alias OAuth2.Client
+
   @defaults [
     site: "https://accounts.google.com",
     authorize_url: "/o/oauth2/v2/auth",
@@ -35,18 +37,18 @@ defmodule Ueberauth.Strategy.Google.OAuth do
   def authorize_url!(params \\ [], opts \\ []) do
     opts
     |> client
-    |> OAuth2.Client.authorize_url!(params)
+    |> Client.authorize_url!(params)
   end
 
   def get(token, url, headers \\ [], opts \\ []) do
     [token: token]
     |> client
     |> put_param("client_secret", client().client_secret)
-    |> OAuth2.Client.get(url, headers, opts)
+    |> Client.get(url, headers, opts)
   end
 
   def get_access_token(params \\ [], opts \\ []) do
-    case opts |> client |> OAuth2.Client.get_token(params) do
+    case opts |> client |> Client.get_token(params) do
       {:error, %{body: %{"error" => error, "error_description" => description}}} ->
         {:error, {error, description}}
 
@@ -62,7 +64,7 @@ defmodule Ueberauth.Strategy.Google.OAuth do
   # Strategy Callbacks
 
   def authorize_url(client, params) do
-    case OAuth2.Client.authorize_url(client, params) do
+    case Client.authorize_url(client, params) do
       {_client, url} -> url
       _ -> nil
     end
@@ -72,6 +74,6 @@ defmodule Ueberauth.Strategy.Google.OAuth do
     client
     |> put_param("client_secret", client.client_secret)
     |> put_header("Accept", "application/json")
-    |> OAuth2.Client.get_token(params, headers)
+    |> Client.get_token(params, headers)
   end
 end
